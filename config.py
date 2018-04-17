@@ -44,9 +44,3 @@ class UnitTest(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'mysql://root:mysql@127.0.0.1:3306/iHome_GZ_UnitTest'
 
-#创建工厂原材料
-configs = {
-    'dev':Develoment,
-    'pro':Production,
-    'test':UnitTest,
-}
