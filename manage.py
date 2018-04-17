@@ -5,6 +5,8 @@ from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 from iHome import *
 
+#用工厂模式创建app
+app = get_app(config_name='pro')
 
 #将manager配置成Manager的对象
 manager = Manager(app)
@@ -17,9 +19,10 @@ manager.add_command('db',MigrateCommand)
 
 @app.route("/",methods=["GET","POST"])
 def index():
-    session['name'] = 'zsy'
+    #测试数据
+    # session['name'] = 'zsy'
 
-    return "index"
+    return "Hello World"
 
 
 if __name__ == '__main__':
