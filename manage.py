@@ -1,18 +1,17 @@
 #coding=utf-8
-from flask import session
 
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
-from iHome import get_app
+from iHome import get_app,db
 
 #用工厂模式创建app
-app = get_app(config_name='pro')
+app = get_app('pro')
 
 #将manager配置成Manager的对象
 manager = Manager(app)
 
 #在迁移是让app和db建立关联
-# Migrate(app,db)
+Migrate(app,db)
 #将迁移脚本添加到脚本管理器
 manager.add_command('db',MigrateCommand)
 
