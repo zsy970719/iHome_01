@@ -12,6 +12,8 @@ class Config(object):
     # redis数据库配置
     REDIS_HOST = '127.0.0.1'
     REDIS_PORT = 6379
+
+    #秘钥
     SECRET_KEY = 'q6pBNcWPgmF6BqB6b5VICF7z7pI+90o0O4CaJsFGjzRsYiya9SEgUDytXvzFsIaR'
 
     # 指定存储session数据的数据库类型为redis
@@ -22,3 +24,23 @@ class Config(object):
     SESSION_USE_SIGNER = True
     # 设置session有效期:这里里里指的是session的扩展操作session时设置的有效期
     PERMANENT_SESSION_LIFETIME = 3600 * 24   # 一一天
+
+
+
+class Develoment(Config):
+    """开发模式下的配置"""
+    pass
+
+
+class Production(Config):
+    """生产环境"""
+    DEBUG = False
+    PERMANENT_SESSION_LIFETIME = 3600 * 24 *2  # 一一天
+    SQLALCHEMY_DATABASE_URI = 'mysql://root:mysql@127.0.0.1:3306/iHome_GZ'
+
+
+class UnitTest(Config):
+    """测试环境"""
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'mysql://root:mysql@127.0.0.1:3306/iHome_GZ_UnitTest'
+
