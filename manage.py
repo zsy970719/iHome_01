@@ -8,8 +8,6 @@ from iHome import get_app
 #用工厂模式创建app
 app = get_app(config_name='pro')
 
-#使用工厂模式
-app = get_app('pro')
 #将manager配置成Manager的对象
 manager = Manager(app)
 
