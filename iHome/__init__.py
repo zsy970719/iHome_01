@@ -5,9 +5,9 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import redis
 from config import configs
+from iHome.until.common import RegexConverter
 
 
-# 创建连接到mysql数据库的对象
 db = SQLAlchemy()
 
 redis_store = None
@@ -29,6 +29,10 @@ def get_app(config_name):
     global redis_store
     # 创建连接到redis数据库的对象
     redis_store = redis.StrictRedis(host=configs[config_name].REDIS_HOST, port=configs[config_name].REDIS_PORT)
+
+    #需要现有正则，才能后面匹配
+    app.url_map.converters['re'] = RegexConverter
+
 
     #哪里需要蓝图就在哪里导入
     from iHome.api_1_0 import api
