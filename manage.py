@@ -3,6 +3,7 @@
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 from iHome import get_app,db
+from iHome import models    #没有实际意义，只在迁移前告知迁移脚本，有哪些模型类
 
 #用工厂模式创建app
 app = get_app('dev')
