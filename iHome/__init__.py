@@ -34,5 +34,8 @@ def get_app(config_name):
     from iHome.api_1_0 import api
     app.register_blueprint(api)
 
+    from iHome.web_html import html_blue
+    app.register_blueprint(html_blue)
+
 
     return app
