@@ -26,10 +26,13 @@ def get_app(config_name):
     Session(app)
 
     db.init_app(app)
-
+    global redis_store
     # 创建连接到redis数据库的对象
     redis_store = redis.StrictRedis(host=configs[config_name].REDIS_HOST, port=configs[config_name].REDIS_PORT)
 
-    import api_1_0
-    app.register_blueprint(api_1_0.api,url_prefix='/api/v1.0')
+    #哪里需要蓝图就在哪里导入
+    from iHome.api_1_0 import api
+    app.register_blueprint(api)
+
+
     return app
