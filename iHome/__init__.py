@@ -10,6 +10,8 @@ from config import configs
 # 创建连接到mysql数据库的对象
 db = SQLAlchemy()
 
+redis_store = None
+
 def get_app(config_name):
 
     app = Flask(__name__)
@@ -28,4 +30,6 @@ def get_app(config_name):
     # 创建连接到redis数据库的对象
     redis_store = redis.StrictRedis(host=configs[config_name].REDIS_HOST, port=configs[config_name].REDIS_PORT)
 
+    import api_1_0
+    app.register_blueprint(api_1_0.api,url_prefix='/api/v1.0')
     return app
