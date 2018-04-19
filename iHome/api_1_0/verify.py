@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 # 图片验证和短信验证
 import logging
+import random
 import re
 from flask import abort, jsonify
 from flask import current_app
@@ -12,6 +13,7 @@ from . import api
 from iHome.until.captcha.captcha import captcha
 from  iHome.until.response_code import RET
 from iHome import constants
+from iHome.until.sms import CCP
 
 
 @api.route('/sms_code', methods=['POST'])
@@ -21,8 +23,10 @@ def send_sms_code():
     2，判断是否缺少参数，并对手机号格式进行效验
     3，获取服务器存储的验证码
     4，跟客户端发来的验证码做对比
-    5，对比成功，发送短信
-    6，响应结果
+    5，对比成功，生成短信验证码
+    6，调用单列类发送短信
+    7，如果发送短信成功，就保存短信验证码到redis数据库
+    8，响应结果
     """
 
     # 1,和获取参数，手机号，验证码，uuid
@@ -51,15 +55,27 @@ def send_sms_code():
     if ImageCode_Client != ImageCode_Server:
         return jsonify(errno=RET.PARAMERR, errmsg='验证码输入错误')
 
-    # 5.TODO 发送短信
+    # 5，对比成功，生成短信验证码
+    sms_code = '%06d' % random.randint(0, 999999)
 
-    # 6，响应结果
-    return '下一步逻辑进入发短信'
+    # 6，调用单列类发送短信
+    result = CCP().send_sms_code(mobile, [sms_code, constants.SMS_CODE_REDIS_EXPIRES / 60], '1')
+    if result != 1:
+        return jsonify(errno=RET.THIRDERR, errmsg='发送短信验证码失败')
+
+    # 7，如果发送短信成功，就保存短信验证码到redis数据库
+    try:
+        redis_store.set('SMS:%s' % mobile, sms_code, constants.SMS_CODE_REDIS_EXPIRES)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='存储短信验证码失败')
+
+    # 8，响应结果
+    return jsonify(errno=RET.OK, errmsg='发送短信验证码成功')
 
 
 # 定义变量记录上一次的uuid
 last_uuid = ''
-
 
 @api.route('/image_code', methods=['GET'])
 def get_image_code():
