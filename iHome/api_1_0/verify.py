@@ -1,6 +1,9 @@
 # -*- coding:utf-8 -*-
 #图片验证和短信验证
+import logging
 from flask import abort, jsonify
+from flask import current_app
+
 from flask import make_response
 from flask import request
 
@@ -25,6 +28,9 @@ def get_image_code():
         abort(403)
     #2，上传图片验证码
     name, text, image = captcha.generate_captcha()
+    # print text
+    # logging.debug('AAA验证码为' + text)
+    current_app.logger.debug('验证码为' + text)
     #3，使用redis数据库缓存图片验证码，uuid作为key
     try:
         if last_uuid:
@@ -34,7 +40,9 @@ def get_image_code():
         redis_store.set('ImageCode:%s'%uuid,text,constants.IMAGE_CODE_REDIS_EXPIRES)
         # redis_store.delete('key:last_uuid')
     except Exception as  e:
-        print e
+        # print e
+        # logging.error(e)
+        current_app.logger.error(e)
         return jsonify(errno=RET.DBERR,errmsg='保存验证码失败')
 
     #记录当前的uuid
