@@ -39,7 +39,7 @@ def get_app(config_name):
     app.config.from_object(configs[config_name])
 
     #开启csrf保护
-    CSRFProtect(app)
+    # CSRFProtect(app)
 
     #使用flask_session扩展session到Redis数据库
     Session(app)

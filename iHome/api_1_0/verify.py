@@ -33,13 +33,18 @@ def send_sms_code():
     json_str = request.data
     json_dict = json.loads(json_str)
     mobile = json_dict.get('mobile')
-    ImageCode_Client = json_dict.get('ImageCode')
+    imageCode_Client = json_dict.get('imageCode')
     uuid = json_dict.get('uuid')
+    print '11111111111'
+    print mobile
+    print imageCode_Client
+    print uuid
+    print '22222222222'
 
     # 2，判断是否缺少参数，并对手机号格式进行效验
-    if not all([mobile, ImageCode_Client, uuid]):
+    if not all([mobile, imageCode_Client, uuid]):
         return jsonify(errno=RET.PARAMERR, errmsg='缺少参数')
-    if re.match(r'^1[345678][0-9]{9}$', mobile):
+    if not re.match(r'^1[345678][0-9]{9}$', mobile):
         return jsonify(errno=RET.PARAMERR, errmsg='手机号格式错误')
 
     # 3，获取服务器存储的验证码
@@ -52,7 +57,7 @@ def send_sms_code():
         return jsonify(errno=RET.NODATA, errmsg='状态码不存在')
 
     # 4，跟客户端发来的验证码做对比
-    if ImageCode_Client != ImageCode_Server:
+    if imageCode_Client.lower() != ImageCode_Server.lower():
         return jsonify(errno=RET.PARAMERR, errmsg='验证码输入错误')
 
     # 5，对比成功，生成短信验证码
