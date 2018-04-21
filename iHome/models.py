@@ -29,6 +29,16 @@ class User(BaseModel, db.Model):
     houses = db.relationship("House", backref="user")  # 用户发布的房屋
     orders = db.relationship("Order", backref="user")  # 用户下的订单
 
+    #生成一个属性，并带有setter和getter方法
+    @property
+    def password(self):
+        return ''
+
+    @password.setter
+    def password(self,value):#接受外界调用setter方法时传入的数据
+        self.password_hash = generate_password_hash(value)
+
+
 
 class Area(BaseModel, db.Model):
     """城区"""

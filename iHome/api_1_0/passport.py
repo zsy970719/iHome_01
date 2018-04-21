@@ -57,9 +57,10 @@ def register():
     # 5，对比成功，创建User对象，给属性赋值
     user = User()
     user.mobile = mobile
-    user.name = u'测试数据'      #后面会有改用户名的逻辑
+    user.name = mobile     #后面会有改用户名的逻辑
     # TODO 密码需要加密后加入到数据库
-    user.password_hash = password
+    #调用password属性的setter方法
+    user.password = password
 
     # 6，将模型属性写入到数据库
     try:

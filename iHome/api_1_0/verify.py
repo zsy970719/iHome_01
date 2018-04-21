@@ -58,11 +58,17 @@ def send_sms_code():
 
     # 5，对比成功，生成短信验证码
     sms_code = '%06d' % random.randint(0, 999999)
+    print '==='*20
+    print u'短信验证码为：' + sms_code
+    print '==='*20
 
-    # 6，调用单列类发送短信
-    result = CCP().send_sms_code(mobile, [sms_code, constants.SMS_CODE_REDIS_EXPIRES / 60], '1')
-    if result != 1:
-        return jsonify(errno=RET.THIRDERR, errmsg='发送短信验证码失败')
+
+
+    # # 6，调用单列类发送短信
+    # result = CCP().send_sms_code(mobile, [sms_code, constants.SMS_CODE_REDIS_EXPIRES / 60], '1')
+    # if result != 1:
+    #     return jsonify(errno=RET.THIRDERR, errmsg='发送短信验证码失败')
+
 
     # 7，如果发送短信成功，就保存短信验证码到redis数据库
     try:
