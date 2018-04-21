@@ -1,14 +1,12 @@
 # -*- coding:utf-8 -*-
 #登录注册
-import re
-
-from flask import current_app
-from flask import request, jsonify
-
-from iHome import redis_store, db
-from iHome.models import User
 from iHome.until.response_code import RET
 from . import api
+from flask import request, jsonify, current_app
+import json, re
+from iHome import redis_store,db
+from iHome.models import User
+
 
 
 @api.route('/users',methods=['POST'])
@@ -27,13 +25,20 @@ def register():
     #当确定前端发来的是json字符串
     json_dict = request.get_json()
     mobile = json_dict.get('mobile')
-    sms_code_client = json_dict.get('sms_code_client')
+    sms_code_client = json_dict.get('sms_code')
     password = json_dict.get('password')
+
+    print '11111111111'
+    print mobile
+    print u'短信验证码为：' + sms_code_client
+    print password
+    print '22222222222'
+
 
     #    2，判断参数是否缺少
     if not all([mobile,sms_code_client,password]):
         return jsonify(errno=RET.PARAMERR,errmsg='缺少参数')
-    if not re.match(r'[^1[345678][0-9]{9}$',mobile):
+    if not re.match(r'^1[345678][0-9]{9}$',mobile):
         return jsonify(errno=RET.PARAMERR,errmsg='手机号格式错误')
 
     #    3，获取服务器存储的短信验证码
@@ -52,7 +57,7 @@ def register():
     # 5，对比成功，创建User对象，给属性赋值
     user = User()
     user.mobile = mobile
-    user.name = mobile      #后面会有改用户名的逻辑
+    user.name = u'测试数据'      #后面会有改用户名的逻辑
     # TODO 密码需要加密后加入到数据库
     user.password_hash = password
 
@@ -67,8 +72,6 @@ def register():
 
     # 7，响应注册结果
     return jsonify(errno=RET.OK, errmsg='注册成功')
-
-
 
 
 

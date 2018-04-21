@@ -35,11 +35,7 @@ def send_sms_code():
     mobile = json_dict.get('mobile')
     imageCode_Client = json_dict.get('imageCode')
     uuid = json_dict.get('uuid')
-    print '11111111111'
-    print mobile
-    print imageCode_Client
-    print uuid
-    print '22222222222'
+
 
     # 2，判断是否缺少参数，并对手机号格式进行效验
     if not all([mobile, imageCode_Client, uuid]):
