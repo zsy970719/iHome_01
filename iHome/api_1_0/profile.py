@@ -11,6 +11,49 @@ from iHome.until.response_code import RET
 from . import api
 
 
+
+@api.route('/users/name',methods=['PUT'])
+def set_user_name():
+    """修改用户名
+    0， TODO 判断用户是否登录
+    1， 获取新的用户名
+    2， 查询当前的登录用户
+    3，将新的用户名赋值给当前的登录用户的user模型
+    4，将数据保存到数据库
+    5，响应修改用户名的结果
+    """
+
+    #1， 获取新的用户名
+    json_dict = request.json
+    new_name = json_dict.get('name')
+    if not new_name:
+        return jsonify(errno=RET.PARAMERR,errmsg='缺少参数')
+
+    #2， 查询当前的登录用户
+    user_id = session['user_id']
+    try:
+        user = User.query.get(user_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR,errmsg='查询用户数据失败')
+    if not user:
+        return jsonify(errno=RET.PARAMERR,errmsg='用户不存在')
+
+    #3，将新的用户名赋值给当前的登录用户的user模型
+    user.name = new_name
+
+    #4，将数据保存到数据库
+    try:
+        db.session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        db.session.rollback()
+        return jsonify(errno=RET.DBERR,errmsg='保存新的用户名失败')
+
+    #5，响应修改用户名的结果
+    return jsonify(errno=RET.OK,errmsg='修改用户名成功')
+
+
 @api.route('/users/avatar',methods=['POST'])
 def upload_avatar():
     """上传用户图像
