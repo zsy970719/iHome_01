@@ -12,7 +12,8 @@ from iHome.until.image_storage import upload_image
 from iHome.until.response_code import RET
 from . import api
 
-@api.route('/users/auth',methods=["GET"])
+
+@api.route('/users/auth', methods=["GET"])
 @login_required
 def get_user_auth():
     """提供实名认证数据
@@ -21,7 +22,7 @@ def get_user_auth():
     3，响应实名认证数据
     """
 
-    #1，查询当前登录用户user信息
+    # 1，查询当前登录用户user信息
     user_id = g.user_id
     try:
         user = User.query.get(user_id)
@@ -31,13 +32,11 @@ def get_user_auth():
     if not user:
         return jsonify(errno=RET.NODATA, errmsg='用户不存在')
 
-    #2构造响应的实名认证的数据
+    # 2构造响应的实名认证的数据
     response_auth_dict = user.auth_to_dict()
 
-    #3，响应实名认证数据
-    return jsonify(errno=RET.OK,errmsg='OK',data=response_auth_dict)
-
-
+    # 3，响应实名认证数据
+    return jsonify(errno=RET.OK, errmsg='OK', data=response_auth_dict)
 
 
 @api.route('/users/auth', methods=['POST'])
