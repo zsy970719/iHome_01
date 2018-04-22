@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 #个人中心
 from flask import current_app, jsonify
+from flask import g
 from flask import request
 from flask import session
 from iHome import constants
@@ -33,7 +34,8 @@ def set_user_name():
         return jsonify(errno=RET.PARAMERR,errmsg='缺少参数')
 
     #2， 查询当前的登录用户
-    user_id = session['user_id']
+    # user_id = session['user_id']
+    user_id = g.user_id
     try:
         user = User.query.get(user_id)
     except Exception as e:
@@ -78,7 +80,9 @@ def upload_avatar():
         return jsonify(errno=RET.PARAMERR,errmsg='获取用户头像失败')
 
     #2，查询当前的登录用户
-    user_id = session['user_id']
+    # user_id = session['user_id']
+    user_id = g.user_id
+
     try:
         user = User.query.get(user_id)
     except Exception as e:
@@ -123,7 +127,8 @@ def get_user_info():
     4.响应个人信息的结果
     """
     #1.从session中获取当前登录用户的user_id
-    user_id = session['user_id']
+    # user_id = session['user_id']
+    user_id = g.user_id
 
     #2.查询当前登录用户的user信息
     try:

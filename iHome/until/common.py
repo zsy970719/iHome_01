@@ -2,6 +2,7 @@
 #定义公共的工具文件
 from functools import wraps
 
+from flask import g
 from flask import session, jsonify
 from werkzeug.routing import BaseConverter
 
@@ -30,6 +31,7 @@ def login_required(view_func):
             return jsonify(errno=RET.SESSIONERR,errmsg='用户未登录')
         else:
             """执行被装饰的视图函数"""
+            g.user_id = user_id
             return view_func(*args,**kwargs)
 
     return wraaper
