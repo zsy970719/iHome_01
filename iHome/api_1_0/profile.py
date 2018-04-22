@@ -13,6 +13,24 @@ from iHome.until.response_code import RET
 from . import api
 
 
+@api.route('/sessions',methods=['DELETE'])
+@login_required
+def logout():
+    """退出登录
+    清理session数据
+    """
+    try:
+        session.pop('user_id')
+        session.pop('mobile')
+        session.pop('name')
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR,errmsg='删除数据失败')
+
+
+    return jsonify(errno=RET.OK,errmsg='退出登录成功')
+
+
 
 
 @api.route('/users/name',methods=['PUT'])
