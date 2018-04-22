@@ -6,13 +6,16 @@ from flask import session
 from iHome import constants
 from iHome import db
 from iHome.models import User
+from iHome.until.common import login_required
 from iHome.until.image_storage import upload_image
 from iHome.until.response_code import RET
 from . import api
 
 
 
+
 @api.route('/users/name',methods=['PUT'])
+@login_required
 def set_user_name():
     """修改用户名
     0， TODO 判断用户是否登录
@@ -55,6 +58,7 @@ def set_user_name():
 
 
 @api.route('/users/avatar',methods=['POST'])
+@login_required
 def upload_avatar():
     """上传用户图像
     0，TODO 判断用户是否登录
@@ -109,6 +113,7 @@ def upload_avatar():
 
 
 @api.route('/users',methods=['GET'])
+@login_required
 def get_user_info():
     """提供个人信息
     0.TODO 判断用户是否登录
