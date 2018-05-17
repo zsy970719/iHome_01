@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 # 房屋模块
 from flask import current_app, jsonify
-from flask import g,session
+from flask import g, session
 from flask import request
 
 from iHome import constants
@@ -164,8 +164,8 @@ def get_house_detail(house_id):
     # 2.构造房屋详情数据
     response_house_detail = house.to_full_dict()
 
-    #尝试获取登录用户信息，有可能未登录
-    login_user_id = session.get('user_id',-1)
+    # 尝试获取登录用户信息，有可能未登录
+    login_user_id = session.get('user_id', -1)
 
     # 3.响应房屋详情数据
-    return jsonify(errno=RET.OK, errmsg='OK', data=response_house_detail,login_user_id=login_user_id)
+    return jsonify(errno=RET.OK, errmsg='OK', data=response_house_detail, login_user_id=login_user_id)

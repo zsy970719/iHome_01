@@ -36,7 +36,6 @@ def send_sms_code():
     imageCode_Client = json_dict.get('imageCode')
     uuid = json_dict.get('uuid')
 
-
     # 2，判断是否缺少参数，并对手机号格式进行效验
     if not all([mobile, imageCode_Client, uuid]):
         return jsonify(errno=RET.PARAMERR, errmsg='缺少参数')
@@ -58,11 +57,9 @@ def send_sms_code():
 
     # 5，对比成功，生成短信验证码
     sms_code = '%06d' % random.randint(0, 999999)
-    print '==='*20
+    print '===' * 20
     print u'短信验证码为：' + sms_code
-    print '==='*20
-
-
+    print '===' * 20
 
     # # 6，调用单列类发送短信
     # result = CCP().send_sms_code(mobile, [sms_code, constants.SMS_CODE_REDIS_EXPIRES / 60], '1')
@@ -83,6 +80,7 @@ def send_sms_code():
 
 # 定义变量记录上一次的uuid
 last_uuid = ''
+
 
 @api.route('/image_code', methods=['GET'])
 def get_image_code():
