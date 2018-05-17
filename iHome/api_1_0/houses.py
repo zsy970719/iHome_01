@@ -4,7 +4,7 @@ from flask import current_app, jsonify
 from flask import g, session
 from flask import request
 
-from iHome import constants
+from iHome import constants, redis_store
 from iHome import db
 from iHome.models import Area, House, Facility, HouseImage
 from iHome.until.common import login_required
@@ -14,8 +14,19 @@ from . import api
 
 
 @api.route('/areas', methods=["GET"])
-def get_area():
+def get_areas():
     """查询地区信息"""
+    ###eval:会根据字符串的数据结构，自动生成对应结果的对象
+
+    try:
+        area_dict_list = redis_store.get('Areas')
+        if area_dict_list:
+            return jsonify(errno=RET.OK,errmsg='ok',data=eval(area_dict_list))
+
+    except Exception as e:
+        current_app.logger.error(e)
+
+
     # 1，查询地区信息
     try:
         areas = Area.query.all()
@@ -28,7 +39,15 @@ def get_area():
     for area in areas:
         area_dict_list.append(area.to_dict())
 
-    # 3,响应地区信息
+    #缓存城区数据
+    #缓存是可有可无的，不能return。会影响主逻辑的运行
+    try:
+        redis_store.set('Areas',area_dict_list,constants.AREA_INFO_REDIS_EXPIRES)
+    except Exception as e:
+        current_app.logger.error(e)
+
+
+    # 3,响应地区信息，只认识字典或者字典列表
     return jsonify(errno=RET.OK, errmsg='读取地区信息成功', data=area_dict_list)
 
 
