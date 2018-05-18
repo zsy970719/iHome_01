@@ -13,6 +13,55 @@ from iHome.until.response_code import RET
 from . import api
 
 
+@api.route('/houses/search')
+def get_house_search():
+    """提供搜索资源
+    0：无条件查询所有的房屋数据
+    1：构造房屋数据
+    2：响应数据
+    """
+    # 获取搜索使用的参数
+    # 根据城区信息搜索房屋
+    aid = request.args.get('aid')
+
+    try:
+        house_query = House.query
+
+        if aid:
+            house_query = house_query.filter(House.area_id == aid).all()
+
+        houses = house_query.all()
+
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='查询房屋数据失败')
+
+    house_dict_list = []
+    for house in houses:
+        house_dict_list.append(house.to_basic_dict())
+
+    return jsonify(errno=RET.OK, errmsg='ok', data=house_dict_list)
+
+
+@api.route('/houses/index')
+def get_house_index():
+    """主页房屋推荐
+    1:直接查询最新的五个房屋：根据创建的时间倒叙，取前面五个
+    """
+
+    try:
+        houses = House.query.order_by(House.create_time.desc()).limit(constants.HOME_PAGE_MAX_HOUSES)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg='查询房屋推荐数据失败')
+
+    house_dict_list = []
+    for house in houses:
+        house_dict_list.append(house.to_basic_dict())
+
+    return jsonify(errno=RET.OK, errmsg='ok', data=house_dict_list)
+
+
 @api.route('/areas', methods=["GET"])
 def get_areas():
     """查询地区信息"""
@@ -21,11 +70,10 @@ def get_areas():
     try:
         area_dict_list = redis_store.get('Areas')
         if area_dict_list:
-            return jsonify(errno=RET.OK,errmsg='ok',data=eval(area_dict_list))
+            return jsonify(errno=RET.OK, errmsg='ok', data=eval(area_dict_list))
 
     except Exception as e:
         current_app.logger.error(e)
-
 
     # 1，查询地区信息
     try:
@@ -39,13 +87,12 @@ def get_areas():
     for area in areas:
         area_dict_list.append(area.to_dict())
 
-    #缓存城区数据
-    #缓存是可有可无的，不能return。会影响主逻辑的运行
+    # 缓存城区数据
+    # 缓存是可有可无的，不能return。会影响主逻辑的运行
     try:
-        redis_store.set('Areas',area_dict_list,constants.AREA_INFO_REDIS_EXPIRES)
+        redis_store.set('Areas', area_dict_list, constants.AREA_INFO_REDIS_EXPIRES)
     except Exception as e:
         current_app.logger.error(e)
-
 
     # 3,响应地区信息，只认识字典或者字典列表
     return jsonify(errno=RET.OK, errmsg='读取地区信息成功', data=area_dict_list)
