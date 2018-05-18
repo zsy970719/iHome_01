@@ -14,12 +14,25 @@ from iHome.until.common import login_required
 @api.route('/orders', methods=['GET'])
 @login_required
 def get_order_list():
+    # 接受用户信息
+    role = request.args.get('role')
+    if role not in ['custom', 'landlord']:
+        return jsonify(errno=RET.PARAMERR, errmsg='用户身份错误')
+
     # 1
     user_id = g.user_id
 
     # 2
     try:
-        orders = Order.query.filter(Order.user_id==user_id)
+        if role == 'custom':  # 查询我的订单
+            orders = Order.query.filter(Order.user_id == user_id)
+        else:  # 查询客户订单
+            # 获取该用户发布的房屋
+            houses = House.query.filter(House.user_id == user_id).all()
+            # 收集发布的房屋的house_id
+            house_id = [house.id for house in houses]
+            # 将在订单只能怪的房屋对应的订单查询出来
+            orders = Order.query.filter(Order.house_id.in_(house_id)).all()
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errno=RET.DBERR, errmsg='查询订单数据失败')
