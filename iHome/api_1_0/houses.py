@@ -1,12 +1,13 @@
 # -*- coding:utf-8 -*-
 # 房屋模块
+from datetime import datetime
 from flask import current_app, jsonify
 from flask import g, session
 from flask import request
 
 from iHome import constants, redis_store
 from iHome import db
-from iHome.models import Area, House, Facility, HouseImage
+from iHome.models import Area, House, Facility, HouseImage, Order
 from iHome.until.common import login_required
 from iHome.until.image_storage import upload_image
 from iHome.until.response_code import RET
@@ -27,19 +28,45 @@ def get_house_search():
     sk = request.args.get('sk', 'new')
     current_app.logger.debug(sk)
 
-    p = request.args.get('p',1)
+    p = request.args.get('p', 1)
+    sd = request.args.get('sd', '')
+    ed = request.args.get('ed', '')
+    start_date = None
+    end_date = None
     try:
         p = int(p)
+        if sd:
+            start_date = datetime.strptime(sd, '%Y-%m-%d')
+        if ed:
+            end_date = datetime.strptime(ed, '%Y-%m-%d')
+
+        if start_date and end_date:  # 入住时间必须小于离开时间
+            assert start_date < end_date, Exception('入住时间有误')  # 主动抛出异常
+
     except Exception as e:
         current_app.logger.error(e)
-        return jsonify(errno=RET.PARAMERR,errmsg='参数有误')
-
+        return jsonify(errno=RET.PARAMERR, errmsg='参数有误')
 
     try:
         house_query = House.query
 
         if aid:
             house_query = house_query.filter(House.area_id == aid)
+
+        conflict_orders = []
+        if start_date and end_date:
+            # 根据用户选中的入住时间和离开时间，筛选对应的房屋信息
+            conflict_orders = Order.query.filter(end_date > Order.begin_date, start_date < Order.end_date).all()
+        elif start_date:
+            conflict_orders = Order.query.filter(start_date < Order.end_date).all()
+        elif end_date:
+            conflict_orders = Order.query.filter(end_date > Order.begin_date).all()
+
+        # 当发现有时间冲突是，才会筛选
+        if conflict_orders:
+            conflict_house_ids = [order.house_id for order in conflict_orders]
+            house_query = house_query.filter(House.id.notin_(conflict_house_ids))
+
         if sk == 'booking':  # 根据订单量由⾼到低
             house_query = house_query.order_by(House.order_count.desc())
         elif sk == 'price-inc':  # 价格低到⾼
@@ -50,7 +77,7 @@ def get_house_search():
             house_query = house_query.order_by(House.create_time.desc())
 
         # houses = house_query.all()
-        paginate = house_query.paginate(p,constants.HOUSE_LIST_PAGE_CAPACITY,False)
+        paginate = house_query.paginate(p, constants.HOUSE_LIST_PAGE_CAPACITY, False)
         houses = paginate.items
         total_page = paginate.pages
 
@@ -63,8 +90,8 @@ def get_house_search():
         house_dict_list.append(house.to_basic_dict())
 
     response_data = {
-        'total_page':total_page,
-        'houses':house_dict_list
+        'total_page': total_page,
+        'houses': house_dict_list
     }
 
     return jsonify(errno=RET.OK, errmsg='ok', data=response_data)
