@@ -24,13 +24,35 @@ def get_house_search():
     # 根据城区信息搜索房屋
     aid = request.args.get('aid')
 
+    sk = request.args.get('sk', 'new')
+    current_app.logger.debug(sk)
+
+    p = request.args.get('p',1)
+    try:
+        p = int(p)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.PARAMERR,errmsg='参数有误')
+
+
     try:
         house_query = House.query
 
         if aid:
-            house_query = house_query.filter(House.area_id == aid).all()
+            house_query = house_query.filter(House.area_id == aid)
+        if sk == 'booking':  # 根据订单量由⾼到低
+            house_query = house_query.order_by(House.order_count.desc())
+        elif sk == 'price-inc':  # 价格低到⾼
+            house_query = house_query.order_by(House.price.asc())
+        elif sk == 'price-des':  # 价格⾼到低
+            house_query = house_query.order_by(House.price.desc())
+        else:  # 根据发布时间倒序
+            house_query = house_query.order_by(House.create_time.desc())
 
-        houses = house_query.all()
+        # houses = house_query.all()
+        paginate = house_query.paginate(p,constants.HOUSE_LIST_PAGE_CAPACITY,False)
+        houses = paginate.items
+        total_page = paginate.pages
 
     except Exception as e:
         current_app.logger.error(e)
@@ -40,7 +62,12 @@ def get_house_search():
     for house in houses:
         house_dict_list.append(house.to_basic_dict())
 
-    return jsonify(errno=RET.OK, errmsg='ok', data=house_dict_list)
+    response_data = {
+        'total_page':total_page,
+        'houses':house_dict_list
+    }
+
+    return jsonify(errno=RET.OK, errmsg='ok', data=response_data)
 
 
 @api.route('/houses/index')
